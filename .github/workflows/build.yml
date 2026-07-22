@@ -1,0 +1,31 @@
+name: build-windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Build, test, and publish
+        shell: pwsh
+        run: ./build.ps1
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: KClaudeDesktop-win-x64
+          path: |
+            artifacts/KClaudeDesktop.exe
+            artifacts/KClaudeDesktop-Setup.exe
+            artifacts/KClaudeDesktop-Source.zip
+            artifacts/SHA256SUMS.txt

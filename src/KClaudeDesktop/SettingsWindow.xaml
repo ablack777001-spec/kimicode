@@ -1,0 +1,112 @@
+<Window x:Class="KClaudeDesktop.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="设置、升级与诊断" Width="820" Height="690" MinWidth="700" MinHeight="560"
+        WindowStartupLocation="CenterOwner" Loaded="Window_Loaded" Closing="Window_Closing">
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="12" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel>
+            <TextBlock Text="设置、升级与诊断" FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Text="Key 不回显、不写日志；升级必须手动确认，并保留可验证回滚。" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0" />
+        </StackPanel>
+
+        <TabControl x:Name="SettingsTabs" Grid.Row="2" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}">
+            <TabItem Header="Key 与通道">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="22">
+                        <TextBlock Text="当前状态" FontSize="16" FontWeight="SemiBold" />
+                        <TextBlock x:Name="MemberStatusText" Margin="0,10,0,3" />
+                        <TextBlock x:Name="ApiStatusText" Margin="0,0,0,18" />
+
+                        <TextBlock Text="更新会员 Key（留空则保留）" FontWeight="SemiBold" />
+                        <PasswordBox x:Name="MemberKeyBox" Margin="0,7,0,14" />
+                        <TextBlock Text="更新开放平台 Key（留空则保留）" FontWeight="SemiBold" />
+                        <PasswordBox x:Name="ApiKeyBox" Margin="0,7,0,14" />
+                        <TextBlock Text="会员 K3 上下文" FontWeight="SemiBold" />
+                        <ComboBox x:Name="ContextCombo" Margin="0,7,0,18" Width="220" HorizontalAlignment="Left">
+                            <ComboBoxItem Content="1M · k3[1m]" Tag="1m" />
+                            <ComboBoxItem Content="256K · k3" Tag="256k" />
+                        </ComboBox>
+                        <Button Content="安全保存" Style="{StaticResource PrimaryButton}" Width="150" HorizontalAlignment="Left" Click="SaveKeysButton_Click" />
+                        <TextBlock Text="DPAPI 密文绑定当前 Windows 用户和本机，复制到另一台电脑后必须重新录入 Key。"
+                                   Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,16,0,0" />
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="电脑安装">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="22">
+                        <TextBlock Text="Claude Code CLI" FontSize="16" FontWeight="SemiBold" />
+                        <TextBlock x:Name="CliStatusText" TextWrapping="Wrap" Margin="0,8,0,12" />
+                        <Button Content="安装官方 Claude Code CLI" Width="220" HorizontalAlignment="Left" Click="InstallCliButton_Click" />
+                        <TextBlock Text="只在点击后打开 Anthropic 官方 PowerShell 安装器；不会要求 Anthropic 登录。"
+                                   Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,8,0,22" />
+
+                        <TextBlock Text="Claude 用户配置" FontSize="16" FontWeight="SemiBold" />
+                        <Button Content="备份并修复第三方模型配置" Width="250" HorizontalAlignment="Left" Margin="0,10,0,0" Click="RepairConfigButton_Click" />
+                        <TextBlock Text="字段级合并 .claude.json/settings.json，清理冲突变量；不会覆盖权限、MCP、hooks 等其他设置。"
+                                   Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,8,0,22" />
+
+                        <TextBlock Text="安装 KClaude Desktop" FontSize="16" FontWeight="SemiBold" />
+                        <CheckBox x:Name="DesktopShortcutCheck" Content="同时创建桌面快捷方式" Margin="0,10,0,10" />
+                        <Button Content="安装到当前 Windows 用户" Width="220" HorizontalAlignment="Left" Click="InstallAppButton_Click" />
+                        <TextBlock Text="单文件 EXE 会复制到 LocalAppData，创建开始菜单入口和 kclaude 命令；无需管理员权限。"
+                                   Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,8,0,0" />
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="升级与回滚">
+                <Grid Margin="22">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="Claude Code 版本" FontSize="16" FontWeight="SemiBold" />
+                        <TextBlock x:Name="UpdateStatusText" Text="尚未检查" Margin="0,8,0,10" />
+                        <CheckBox x:Name="AutoCheckUpdatesCheck" Content="每天首次启动时仅检查新版本（不自动升级）" IsChecked="True" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,14,0,18">
+                        <Button Content="仅检查更新" Click="CheckUpdateButton_Click" />
+                        <Button x:Name="UpgradeButton" Content="备份后手动升级" Style="{StaticResource PrimaryButton}" Margin="10,0,0,0" Click="UpgradeButton_Click" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="2" Margin="0,0,0,14">
+                        <TextBlock Text="可回滚版本" FontWeight="SemiBold" />
+                        <Grid Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ComboBox x:Name="BackupCombo" MinWidth="360" />
+                            <Button Grid.Column="2" Content="恢复所选版本" Click="RollbackButton_Click" />
+                        </Grid>
+                    </StackPanel>
+                    <TextBox Grid.Row="3" x:Name="UpdateLogBox" IsReadOnly="True" TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto" FontFamily="Cascadia Mono" FontSize="12" />
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="诊断">
+                <Grid Margin="22">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="12" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Button Content="运行无付费诊断" Width="180" HorizontalAlignment="Left" Click="DiagnosticsButton_Click" />
+                    <TextBox Grid.Row="2" x:Name="DiagnosticsBox" IsReadOnly="True" TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto" FontFamily="Cascadia Mono" FontSize="12" />
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>

@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="src/KClaudeDesktop.Core/KClaudeDesktop.Core.csproj" />
+  <Project Path="src/KClaudeDesktop/KClaudeDesktop.csproj" />
+  <Project Path="tests/KClaudeDesktop.SmokeTests/KClaudeDesktop.SmokeTests.csproj" />
+</Solution>

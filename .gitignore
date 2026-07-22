@@ -1,0 +1,15 @@
+**/bin/
+**/obj/
+artifacts/
+.vs/
+.idea/
+*.user
+*.suo
+*.pdb
+*.log
+ui-smoke.png
+*.dpapi
+*.bak
+.claude.json
+.claude/
+.claude-kimi-switch/
