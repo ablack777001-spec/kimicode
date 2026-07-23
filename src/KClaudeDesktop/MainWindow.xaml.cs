@@ -55,7 +55,7 @@ public partial class MainWindow : Window
     {
         var ui = _configuration.LoadUiSettings();
         ProjectPathBox.Text = Directory.Exists(ui.LastProjectDirectory) ? ui.LastProjectDirectory : _paths.UserProfile;
-        ProfileCombo.SelectedIndex = ui.LastProfile == "api" ? 1 : 0;
+        ProfileCombo.SelectedIndex = BillingSafety.ResolveStartupProfile(ui.LastProfile) == ClaudeProfile.Api ? 1 : 0;
         PermissionCombo.SelectedIndex = FindComboIndex(PermissionCombo, ui.PermissionMode, fallback: 0);
         ContinueCheck.IsChecked = ui.ContinueMostRecent;
         AppendIntro();
@@ -171,19 +171,9 @@ public partial class MainWindow : Window
         }
 
         var profile = GetSelectedProfile();
-        if (profile == ClaudeProfile.Api && !_apiConfirmed)
+        if (!ConfirmApiUse(profile, "发送当前任务"))
         {
-            var answer = MessageBox.Show(
-                this,
-                "你选择了开放平台按量计费通道。本应用不会自动切换到该通道。是否仅为当前窗口确认使用？",
-                "确认按量计费",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-            if (answer != MessageBoxResult.Yes)
-            {
-                return;
-            }
-            _apiConfirmed = true;
+            return;
         }
 
         var secret = _secrets.GetStatus(profile);
@@ -273,8 +263,13 @@ public partial class MainWindow : Window
     {
         try
         {
+            var profile = GetSelectedProfile();
+            if (!ConfirmApiUse(profile, "打开完整交互终端"))
+            {
+                return;
+            }
             var arguments = ContinueCheck.IsChecked == true ? new[] { "-c" } : Array.Empty<string>();
-            _terminal.Launch(ProjectPathBox.Text, GetSelectedProfile(), arguments);
+            _terminal.Launch(ProjectPathBox.Text, profile, arguments);
             StatusText.Text = "已打开完整交互终端";
         }
         catch (Exception exception)
@@ -403,6 +398,27 @@ public partial class MainWindow : Window
             ? ClaudeProfile.Api
             : ClaudeProfile.Member;
 
+    private bool ConfirmApiUse(ClaudeProfile profile, string action)
+    {
+        if (!BillingSafety.RequiresApiConfirmation(profile, _apiConfirmed))
+        {
+            return true;
+        }
+
+        var answer = MessageBox.Show(
+            this,
+            $"你选择了开放平台按量计费通道，准备{action}。本应用不会自动切换到该通道。是否仅为当前窗口确认使用？",
+            "确认按量计费",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+        if (answer != MessageBoxResult.Yes)
+        {
+            return false;
+        }
+        _apiConfirmed = true;
+        return true;
+    }
+
     private string GetSelectedPermissionMode() =>
         (PermissionCombo.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "plan";
 
@@ -410,7 +426,7 @@ public partial class MainWindow : Window
     {
         var settings = _configuration.LoadUiSettings();
         settings.LastProjectDirectory = ProjectPathBox.Text;
-        settings.LastProfile = GetSelectedProfile() == ClaudeProfile.Api ? "api" : "member";
+        settings.LastProfile = BillingSafety.GetPersistedProfile(GetSelectedProfile());
         settings.PermissionMode = GetSelectedPermissionMode();
         settings.ContinueMostRecent = ContinueCheck.IsChecked == true;
         _configuration.SaveUiSettings(settings);

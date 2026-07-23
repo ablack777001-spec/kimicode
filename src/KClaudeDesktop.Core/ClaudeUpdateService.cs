@@ -117,7 +117,10 @@ public sealed class ClaudeUpdateService
         process.Start();
         var stdoutTask = PumpAsync(process.StandardOutput, onOutput, cancellationToken);
         var stderrTask = PumpAsync(process.StandardError, onOutput, cancellationToken);
-        await Task.WhenAll(stdoutTask, stderrTask, process.WaitForExitAsync(cancellationToken));
+        await ManagedProcess.WaitForExitOrKillAsync(
+            process,
+            [stdoutTask, stderrTask],
+            cancellationToken);
 
         if (process.ExitCode != 0)
         {
@@ -299,6 +302,48 @@ public sealed class ClaudeUpdateService
             {
                 process.Dispose();
             }
+        }
+    }
+}
+
+public static class ManagedProcess
+{
+    public static async Task WaitForExitOrKillAsync(
+        Process process,
+        IReadOnlyList<Task> drainTasks,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.WhenAll(drainTasks.Append(process.WaitForExitAsync(cancellationToken)));
+        }
+        catch
+        {
+            TryKill(process);
+            try
+            {
+                await process.WaitForExitAsync(CancellationToken.None);
+            }
+            catch
+            {
+                // Preserve the original failure or cancellation.
+            }
+            throw;
+        }
+    }
+
+    private static void TryKill(Process process)
+    {
+        try
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+            }
+        }
+        catch
+        {
+            // The process may have exited between the check and Kill.
         }
     }
 }

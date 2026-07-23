@@ -36,6 +36,14 @@ public partial class App : Application
             args.Handled = true;
         };
 
+        if (ApplicationStartup.Resolve(e.Args) == ApplicationStartupMode.Uninstall)
+        {
+            var uninstallWindow = new UninstallWindow(Installer);
+            MainWindow = uninstallWindow;
+            uninstallWindow.Show();
+            return;
+        }
+
         if (e.Args.Length >= 2 && e.Args[0] == "--headless-doctor")
         {
             try
@@ -114,6 +122,19 @@ public partial class App : Application
 
         try
         {
+            if (BillingSafety.RequiresApiConfirmation(profile, alreadyConfirmed: false))
+            {
+                var answer = MessageBox.Show(
+                    "即将通过开放平台按量计费 Key 启动 Claude Code。此操作可能产生费用，是否继续？",
+                    "确认按量计费",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+                if (answer != MessageBoxResult.Yes)
+                {
+                    Shutdown(0);
+                    return;
+                }
+            }
             Terminal.Launch(Environment.CurrentDirectory, profile, forwarded);
             Shutdown(0);
         }

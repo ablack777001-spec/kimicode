@@ -7,10 +7,15 @@ namespace KClaudeDesktop.Core;
 public sealed class ClaudeConfigurationService
 {
     private readonly AppPaths _paths;
+    private readonly Func<string, string?> _readUserEnvironmentVariable;
 
-    public ClaudeConfigurationService(AppPaths paths)
+    public ClaudeConfigurationService(
+        AppPaths paths,
+        Func<string, string?>? readUserEnvironmentVariable = null)
     {
         _paths = paths;
+        _readUserEnvironmentVariable = readUserEnvironmentVariable ??
+            (name => Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.User));
     }
 
     public IReadOnlyList<string> InitializeAndRepair()
@@ -59,10 +64,9 @@ public sealed class ClaudeConfigurationService
 
         foreach (var name in ProfileEnvironment.ConflictingVariables)
         {
-            if (Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.User) is not null)
+            if (_readUserEnvironmentVariable(name) is not null)
             {
-                Environment.SetEnvironmentVariable(name, null, EnvironmentVariableTarget.User);
-                changes.Add($"已清理用户环境变量: {name}");
+                changes.Add($"已保留用户环境变量: {name}（KClaude 子进程会隔离该变量）");
             }
         }
 

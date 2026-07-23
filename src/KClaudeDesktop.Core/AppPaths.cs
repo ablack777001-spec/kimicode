@@ -2,18 +2,32 @@ namespace KClaudeDesktop.Core;
 
 public sealed class AppPaths
 {
-    public AppPaths(string? userProfile = null, string? switcherRoot = null, string? appDataRoot = null)
+    public AppPaths(
+        string? userProfile = null,
+        string? switcherRoot = null,
+        string? appDataRoot = null,
+        string? localAppDataRoot = null,
+        string? startMenuProgramsRoot = null,
+        string? desktopRoot = null)
     {
         UserProfile = userProfile ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         SwitcherRoot = switcherRoot ?? Path.Combine(UserProfile, ".claude-kimi-switch");
         AppDataRoot = appDataRoot ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "KClaudeDesktop");
+        LocalAppDataRoot = localAppDataRoot ?? Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        StartMenuProgramsRoot = startMenuProgramsRoot ?? Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),
+            "Programs");
+        DesktopRoot = desktopRoot ?? Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
     }
 
     public string UserProfile { get; }
     public string SwitcherRoot { get; }
     public string AppDataRoot { get; }
+    public string LocalAppDataRoot { get; }
+    public string StartMenuProgramsRoot { get; }
+    public string DesktopRoot { get; }
     public string SecretsRoot => Path.Combine(SwitcherRoot, "secrets");
     public string BackupsRoot => Path.Combine(SwitcherRoot, "backups");
     public string LogsRoot => Path.Combine(SwitcherRoot, "logs");
@@ -27,11 +41,11 @@ public sealed class AppPaths
     public string ClaudeSettingsPath => Path.Combine(UserProfile, ".claude", "settings.json");
     public string UserBinRoot => Path.Combine(UserProfile, "bin");
     public string TerminalCommandPath => Path.Combine(UserBinRoot, "kclaude.cmd");
-    public string InstalledAppRoot => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "Programs",
-        "KClaude Desktop");
+    public string InstalledAppRoot => Path.Combine(LocalAppDataRoot, "Programs", "KClaude Desktop");
     public string InstalledExePath => Path.Combine(InstalledAppRoot, "KClaudeDesktop.exe");
+    public string StartMenuShortcutPath => Path.Combine(StartMenuProgramsRoot, "KClaude Desktop.lnk");
+    public string DesktopShortcutPath => Path.Combine(DesktopRoot, "KClaude Desktop.lnk");
+    public string UninstallRegistrySubKey => @"Software\Microsoft\Windows\CurrentVersion\Uninstall\KClaudeDesktop";
 
     public void EnsureDirectories()
     {

@@ -86,3 +86,13 @@ public static class ProfileEnvironment
         }
     }
 }
+
+public static class BillingSafety
+{
+    public static ClaudeProfile ResolveStartupProfile(string? persistedProfile) => ClaudeProfile.Member;
+
+    public static string GetPersistedProfile(ClaudeProfile selectedProfile) => "member";
+
+    public static bool RequiresApiConfirmation(ClaudeProfile profile, bool alreadyConfirmed) =>
+        profile == ClaudeProfile.Api && !alreadyConfirmed;
+}

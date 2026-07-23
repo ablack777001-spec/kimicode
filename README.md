@@ -19,7 +19,9 @@ KClaude Desktop 是一个面向 Windows 的 Claude Code 图形界面，专门支
 4. 会员通道只设置 `ANTHROPIC_API_KEY`；按量通道只设置 `ANTHROPIC_AUTH_TOKEN`。
 5. 默认通道永久锁定为会员，应用不会因额度不足而自动切换按量 API。
 6. GUI 不提供 `--dangerously-skip-permissions` 开关。
-7. 发布包和源码不包含真实 Key；复制到新电脑后必须重新录入。
+7. 完整终端直接启动 Claude 子进程，不保留含 Key 的 PowerShell 父进程。
+8. 保存 Key 不会顺带修改 Claude 配置或用户级环境变量；配置修复必须单独确认。
+9. 发布包和源码不包含真实 Key；复制到新电脑后必须重新录入。
 
 ## 使用发布版 EXE
 
@@ -36,7 +38,7 @@ KClaude Desktop 是一个面向 Windows 的 Claude Code 图形界面，专门支
 
 1. 复制 `KClaudeDesktop-Setup.exe` 到目标 Windows x64 电脑并运行。
 2. 在“电脑安装”页点击“安装到当前 Windows 用户”。
-3. 如未安装 Claude Code，点击“安装官方 Claude Code CLI”。该按钮只会在用户确认后运行 Anthropic 官方安装器。
+3. 如未安装 Claude Code，点击“安装官方 Claude Code CLI”。有 WinGet 时，该按钮在用户确认后安装官方 `Anthropic.ClaudeCode` 包；没有 WinGet 时只打开 Anthropic 官方安装说明，不会自动执行远程脚本。
 4. 在“Key 与通道”页录入目标电脑自己的两把 Key。
 5. 运行诊断，选择可信任的项目目录后开始使用。
 
@@ -48,9 +50,18 @@ KClaude Desktop 是一个面向 Windows 的 Claude Code 图形界面，专门支
 
 并创建开始菜单入口及 `%USERPROFILE%\bin\kclaude.cmd`。
 
+### 卸载
+
+当前用户安装会注册到 Windows“设置 → 应用 → 已安装的应用”。从系统应用列表卸载时：
+
+- 默认只删除程序、开始菜单入口、`kclaude.cmd` 和对应的用户 PATH 项；
+- DPAPI Key、设置、日志和 CLI 备份默认保留；
+- 勾选“彻底删除”后必须再次确认，只会额外删除 `%APPDATA%\KClaudeDesktop` 和 `%USERPROFILE%\.claude-kimi-switch`；
+- 不会删除 Claude Code CLI、`.claude.json`、`.claude/settings.json` 或其他 Claude 数据。
+
 ## GUI 与完整终端
 
-GUI 使用 Claude Code 的 `--print --output-format stream-json` 接口，实现流式输出和会话恢复。默认权限模式为 `plan`。需要修改项目时，可手动切换为 `acceptEdits` 或 `auto`。
+GUI 使用 Claude Code 的 `--print --output-format stream-json` 接口，实现流式输出和会话恢复。默认权限模式为 `plan`。需要逐项确认时可切换为 `default`；需要直接允许文件编辑时可切换为 `acceptEdits`。第三方 Kimi 通道不提供绕过权限检查的模式。
 
 非交互 print 模式无法呈现所有终端式权限询问。需要完整 slash command、逐项权限确认或终端交互时，点击“打开完整交互终端”。
 
@@ -89,6 +100,16 @@ cd kimicode
 .\build.ps1
 ```
 
+普通构建明确属于未签名开发构建，只生成带 `-unsigned` 后缀的文件。标准文件名只能由可信签名发布模式生成：
+
+```powershell
+.\build.ps1 -Release `
+  -SigningCertificateThumbprint '<CurrentUser\\My 中的代码签名证书指纹>' `
+  -TimestampUrl '<证书颁发机构提供的 RFC 3161 地址>'
+```
+
+正式发布要求 Windows SDK 的 `signtool.exe`，证书必须包含私钥、处于有效期内并具备代码签名用途；构建会在哈希生成前验证签名、时间戳和证书指纹。详见 [发布说明](docs/RELEASING.md)。
+
 同时测试在线版本与官方升级文档：
 
 ```powershell
@@ -97,11 +118,12 @@ cd kimicode
 
 输出位于 `artifacts\`：
 
-- `KClaudeDesktop.exe`
-- `KClaudeDesktop-Setup.exe`
-- `SHA256SUMS.txt`
+- `KClaudeDesktop-unsigned.exe`
+- `KClaudeDesktop-Setup-unsigned.exe`
+- `KClaudeDesktop-Source-unsigned.zip`
+- `SHA256SUMS-unsigned.txt`
 
-两个 EXE 是同一份自包含单文件程序；Setup 文件名会让应用首次打开时直接引导安装。
+两个 EXE 是同一份自包含单文件程序；Setup 文件名会让应用首次打开时直接引导安装。只有通过 `-Release` 签名闸门后才生成不带 `-unsigned` 后缀的标准发布文件。
 
 ## 开发验证
 
@@ -115,6 +137,8 @@ dotnet run --project tests\KClaudeDesktop.SmokeTests\KClaudeDesktop.SmokeTests.c
 ## 已知边界
 
 - 当前发布目标为 Windows x64。
+- 普通构建固定标记为未签名开发包，Windows SmartScreen 或企业应用控制策略可能拒绝运行；不要把它当作可信正式发布包。
+- 正式发布模式要求可信 Authenticode 证书；仓库不包含证书、私钥或密码。
 - DPAPI 密文不能跨电脑或跨 Windows 用户迁移。
 - GUI 依赖 Claude Code 的 `stream-json`、session 和 permission-mode 参数；每次更新后会重新检查这些能力。
 - 应用自身的新版由本仓库构建和 GitHub Actions 发布；没有配置仓库地址前，不会自行下载未知来源的应用更新。

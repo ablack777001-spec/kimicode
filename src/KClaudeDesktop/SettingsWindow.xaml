@@ -44,18 +44,18 @@
                         <TextBlock Text="Claude Code CLI" FontSize="16" FontWeight="SemiBold" />
                         <TextBlock x:Name="CliStatusText" TextWrapping="Wrap" Margin="0,8,0,12" />
                         <Button Content="安装官方 Claude Code CLI" Width="220" HorizontalAlignment="Left" Click="InstallCliButton_Click" />
-                        <TextBlock Text="只在点击后打开 Anthropic 官方 PowerShell 安装器；不会要求 Anthropic 登录。"
+                        <TextBlock Text="有 WinGet 时安装官方 Anthropic.ClaudeCode 包；否则只打开 Anthropic 官方安装说明。不会自动执行远程脚本。"
                                    Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,8,0,22" />
 
                         <TextBlock Text="Claude 用户配置" FontSize="16" FontWeight="SemiBold" />
                         <Button Content="备份并修复第三方模型配置" Width="250" HorizontalAlignment="Left" Margin="0,10,0,0" Click="RepairConfigButton_Click" />
-                        <TextBlock Text="字段级合并 .claude.json/settings.json，清理冲突变量；不会覆盖权限、MCP、hooks 等其他设置。"
+                        <TextBlock Text="字段级合并 .claude.json/settings.json；用户环境变量只检测提示、不删除，也不会覆盖权限、MCP、hooks 等其他设置。"
                                    Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,8,0,22" />
 
                         <TextBlock Text="安装 KClaude Desktop" FontSize="16" FontWeight="SemiBold" />
                         <CheckBox x:Name="DesktopShortcutCheck" Content="同时创建桌面快捷方式" Margin="0,10,0,10" />
                         <Button Content="安装到当前 Windows 用户" Width="220" HorizontalAlignment="Left" Click="InstallAppButton_Click" />
-                        <TextBlock Text="单文件 EXE 会复制到 LocalAppData，创建开始菜单入口和 kclaude 命令；无需管理员权限。"
+                        <TextBlock Text="单文件 EXE 会复制到 LocalAppData，注册到“已安装的应用”，并创建开始菜单入口和 kclaude 命令；无需管理员权限。"
                                    Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,8,0,0" />
                     </StackPanel>
                 </ScrollViewer>
@@ -75,7 +75,7 @@
                         <CheckBox x:Name="AutoCheckUpdatesCheck" Content="每天首次启动时仅检查新版本（不自动升级）" IsChecked="True" />
                     </StackPanel>
                     <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,14,0,18">
-                        <Button Content="仅检查更新" Click="CheckUpdateButton_Click" />
+                        <Button x:Name="CheckUpdateButton" Content="仅检查更新" Click="CheckUpdateButton_Click" />
                         <Button x:Name="UpgradeButton" Content="备份后手动升级" Style="{StaticResource PrimaryButton}" Margin="10,0,0,0" Click="UpgradeButton_Click" />
                     </StackPanel>
                     <StackPanel Grid.Row="2" Margin="0,0,0,14">
@@ -87,7 +87,7 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <ComboBox x:Name="BackupCombo" MinWidth="360" />
-                            <Button Grid.Column="2" Content="恢复所选版本" Click="RollbackButton_Click" />
+                            <Button Grid.Column="2" x:Name="RollbackButton" Content="恢复所选版本" Click="RollbackButton_Click" />
                         </Grid>
                     </StackPanel>
                     <TextBox Grid.Row="3" x:Name="UpdateLogBox" IsReadOnly="True" TextWrapping="Wrap"

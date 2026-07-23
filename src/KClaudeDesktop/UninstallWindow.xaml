@@ -1,0 +1,37 @@
+<Window x:Class="KClaudeDesktop.UninstallWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="卸载 KClaude Desktop" Width="560" Height="370"
+        ResizeMode="NoResize" WindowStartupLocation="CenterScreen">
+    <Grid Margin="26">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="18" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel>
+            <TextBlock Text="卸载 KClaude Desktop" FontSize="24" FontWeight="SemiBold" />
+            <TextBlock Text="将删除当前用户安装、开始菜单入口和 kclaude 命令。"
+                       Foreground="{StaticResource MutedBrush}" Margin="0,7,0,0" TextWrapping="Wrap" />
+        </StackPanel>
+
+        <Border Grid.Row="2" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="1" CornerRadius="9" Padding="18">
+            <StackPanel>
+                <TextBlock Text="默认保留个人数据" FontSize="16" FontWeight="SemiBold" />
+                <TextBlock Text="DPAPI Key、应用设置、日志和 Claude CLI 备份默认保留，稍后重新安装仍可使用。"
+                           Foreground="{StaticResource MutedBrush}" Margin="0,7,0,16" TextWrapping="Wrap" />
+                <CheckBox x:Name="PurgeDataCheck" Content="同时彻底删除 KClaude Desktop 管理的 Key、设置、日志和 CLI 备份" />
+                <TextBlock Text="不会删除 Claude Code CLI、.claude.json、.claude/settings.json 或其他 Claude 数据。彻底清理不可恢复。"
+                           Foreground="{StaticResource DangerBrush}" Margin="24,7,0,0" TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
+            <Button Content="取消" Width="100" Click="CancelButton_Click" />
+            <Button Content="卸载" Width="120" Margin="10,0,0,0" Style="{StaticResource PrimaryButton}" Click="UninstallButton_Click" />
+        </StackPanel>
+    </Grid>
+</Window>

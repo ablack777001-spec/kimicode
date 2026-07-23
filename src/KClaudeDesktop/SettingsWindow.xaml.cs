@@ -85,11 +85,15 @@ public partial class SettingsWindow : Window
             config.MemberContext = (ContextCombo.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "1m";
             config.DefaultProfile = "member";
             _configuration.SaveSwitcherConfig(config);
-            _claudeConfiguration.InitializeAndRepair();
             MemberKeyBox.Clear();
             ApiKeyBox.Clear();
             RefreshSecretStatus();
-            MessageBox.Show(this, "已安全保存。默认仍为会员通道。", "保存成功", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(
+                this,
+                "Key 与会员上下文已安全保存；Claude 用户配置和用户环境变量均未改动。默认仍为会员通道。",
+                "保存成功",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
         }
         catch (Exception exception)
         {
@@ -115,13 +119,20 @@ public partial class SettingsWindow : Window
     {
         var answer = MessageBox.Show(
             this,
-            "将打开 Anthropic 官方 PowerShell 安装器并访问网络。不会卸载桌面应用，也不会调用模型。继续吗？",
+            "有 WinGet 时将安装官方 Anthropic.ClaudeCode 包；没有时只打开 Anthropic 官方安装说明。不会自动执行远程脚本，也不会调用模型。继续吗？",
             "安装 Claude Code CLI",
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
         if (answer == MessageBoxResult.Yes)
         {
-            _installer.LaunchOfficialClaudeInstaller();
+            try
+            {
+                _installer.LaunchOfficialClaudeInstaller();
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(this, exception.Message, "无法启动安装", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 
@@ -129,7 +140,7 @@ public partial class SettingsWindow : Window
     {
         var answer = MessageBox.Show(
             this,
-            "将先备份，再字段级合并 Claude 用户配置并清理指定冲突变量。继续吗？",
+            "将先备份，再字段级合并 Claude 用户配置。settings.json 中的冲突项会清理，用户环境变量只提示、不删除。继续吗？",
             "修复配置",
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
@@ -255,6 +266,11 @@ public partial class SettingsWindow : Window
                 MessageBoxButton.OK,
                 result.Success ? MessageBoxImage.Information : MessageBoxImage.Warning);
         }
+        catch (OperationCanceledException)
+        {
+            AppendUpdateLog("升级已取消；升级进程已停止。");
+            UpdateStatusText.Text = "升级已取消";
+        }
         catch (Exception exception)
         {
             AppendUpdateLog("升级失败：" + exception.Message);
@@ -299,6 +315,11 @@ public partial class SettingsWindow : Window
             RefreshBackups();
             await RefreshCliStatusAsync();
             MessageBox.Show(this, message, "回滚完成", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (OperationCanceledException)
+        {
+            AppendUpdateLog("回滚已取消。");
+            UpdateStatusText.Text = "回滚已取消";
         }
         catch (Exception exception)
         {
@@ -390,7 +411,9 @@ public partial class SettingsWindow : Window
 
     private void SetUpdateBusy(bool busy)
     {
+        CheckUpdateButton.IsEnabled = !busy;
         UpgradeButton.IsEnabled = !busy;
         BackupCombo.IsEnabled = !busy;
+        RollbackButton.IsEnabled = !busy;
     }
 }

@@ -59,9 +59,8 @@
                     <TextBlock Text="权限模式" FontWeight="SemiBold" Margin="0,0,0,7" />
                     <ComboBox x:Name="PermissionCombo">
                         <ComboBoxItem Content="Plan · 只规划" Tag="plan" />
-                        <ComboBoxItem Content="Manual · 手动许可" Tag="manual" />
+                        <ComboBoxItem Content="Default · 逐项确认" Tag="default" />
                         <ComboBoxItem Content="Accept edits · 接受编辑" Tag="acceptEdits" />
-                        <ComboBoxItem Content="Auto · 自动判定" Tag="auto" />
                         <ComboBoxItem Content="Don't ask · 不询问" Tag="dontAsk" />
                     </ComboBox>
                     <TextBlock Text="界面不提供跳过全部权限的危险模式。" TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}" Margin="0,8,0,16" FontSize="12" />
@@ -112,7 +111,7 @@
         <Border Grid.Row="2" Background="#11100F" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0">
             <Grid Margin="14,0">
                 <TextBlock x:Name="StatusText" Text="就绪" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" />
-                <TextBlock Text="Ctrl+Enter 发送 · Key 仅进入 Claude 子进程" Foreground="#777169" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                <TextBlock Text="Ctrl+Enter 发送 · Key 不进入命令行或日志，仅注入 Claude 进程" Foreground="#777169" HorizontalAlignment="Right" VerticalAlignment="Center" />
             </Grid>
         </Border>
     </Grid>

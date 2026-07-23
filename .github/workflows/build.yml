@@ -17,15 +17,18 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
+      - name: Verify release build contract
+        shell: pwsh
+        run: ./tests/BuildContract.ps1 -BuildScript ./build.ps1
       - name: Build, test, and publish
         shell: pwsh
         run: ./build.ps1
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: KClaudeDesktop-win-x64
+          name: KClaudeDesktop-win-x64-UNSIGNED
           path: |
-            artifacts/KClaudeDesktop.exe
-            artifacts/KClaudeDesktop-Setup.exe
-            artifacts/KClaudeDesktop-Source.zip
-            artifacts/SHA256SUMS.txt
+            artifacts/KClaudeDesktop-unsigned.exe
+            artifacts/KClaudeDesktop-Setup-unsigned.exe
+            artifacts/KClaudeDesktop-Source-unsigned.zip
+            artifacts/SHA256SUMS-unsigned.txt

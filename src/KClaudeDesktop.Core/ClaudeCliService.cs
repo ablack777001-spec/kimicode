@@ -132,7 +132,7 @@ public sealed class ClaudeCliRunner
 
     public static IReadOnlyList<string> BuildArguments(ClaudeRunRequest request)
     {
-        var allowedModes = new[] { "plan", "manual", "acceptEdits", "auto", "dontAsk" };
+        var allowedModes = new[] { "plan", "default", "acceptEdits", "dontAsk" };
         if (!allowedModes.Contains(request.PermissionMode, StringComparer.Ordinal))
         {
             throw new ArgumentException("不支持的权限模式。", nameof(request));
